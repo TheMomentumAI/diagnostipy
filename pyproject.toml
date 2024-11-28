@@ -20,6 +20,7 @@ autoflake8 = "^0.4.1"
 coverage = "^7.6.8"
 pytest-cov = "^6.0.0"
 twine = "^5.1.1"
+pre-commit = "^4.0.1"
 
 [build-system]
 requires = ["poetry-core"]

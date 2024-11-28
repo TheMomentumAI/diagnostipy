@@ -5,9 +5,7 @@ import numpy as np
 from diagnostipy.core.models.symptom_rule import SymptomRule
 
 
-def weighted_confidence(
-    applicable_rules: list[SymptomRule], *args, **kwargs
-) -> float:
+def weighted_confidence(applicable_rules: list[SymptomRule], *args, **kwargs) -> float:
     """
     Calculate confidence as a weighted average of rule weights.
 
@@ -40,9 +38,7 @@ def entropy_based_confidence(
     if not applicable_rules:
         return 0.0
 
-    weights = np.array(
-        [rule.weight for rule in applicable_rules if rule.weight]
-    )
+    weights = np.array([rule.weight for rule in applicable_rules if rule.weight])
 
     if weights.sum() == 0:
         return 0.0
@@ -61,10 +57,7 @@ def entropy_based_confidence(
 
 
 def rule_coverage_confidence(
-    applicable_rules: list[SymptomRule],
-    total_rules: Optional[int],
-    *args,
-    **kwargs
+    applicable_rules: list[SymptomRule], total_rules: Optional[int], *args, **kwargs
 ) -> float:
     """
     Calculate confidence based on rule coverage.

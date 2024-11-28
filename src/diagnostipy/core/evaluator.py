@@ -1,14 +1,9 @@
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 from diagnostipy.core.models.diagnosis import Diagnosis, DiagnosisBase
-from diagnostipy.core.models.symptom_rule import SymptomRule
 from diagnostipy.core.ruleset import SymptomRuleset
 from diagnostipy.utils.scoring import CONFIDENCE_FUNCTIONS, EVALUATION_FUNCTIONS
-from diagnostipy.utils.scoring.evaluation_functions import default_evaluation
-from diagnostipy.utils.scoring.types import (
-    ConfidenceFunction,
-    EvaluationFunction,
-)
+from diagnostipy.utils.scoring.types import ConfidenceFunction, EvaluationFunction
 
 
 class Evaluator:
@@ -27,9 +22,7 @@ class Evaluator:
         self,
         ruleset: SymptomRuleset,
         data: Optional[Any] = None,
-        evaluation_function: (
-            Optional[EvaluationFunction] | str
-        ) = "binary_simple",
+        evaluation_function: Optional[EvaluationFunction] | str = "binary_simple",
         confidence_function: Optional[ConfidenceFunction] | str = "weighted",
         diagnosis_model: type[DiagnosisBase] = Diagnosis,
     ):
@@ -37,17 +30,16 @@ class Evaluator:
         self.ruleset = ruleset
         self.diagnosis_model = diagnosis_model
         self.diagnosis = self.diagnosis_model()
-        self._evaluation_function = evaluation_function or default_evaluation
 
+        self._evaluation_function: EvaluationFunction
         if isinstance(evaluation_function, str):
-            self._evaluation_function = EVALUATION_FUNCTIONS.get(
-                evaluation_function
-            )
-            if self._evaluation_function is None:
+            eval_func = EVALUATION_FUNCTIONS.get(evaluation_function)
+            if eval_func is None:
                 raise ValueError(
                     f"Unknown evaluation function '{evaluation_function}'. "
                     f"Available options are: {list(EVALUATION_FUNCTIONS.keys())}"
                 )
+            self._evaluation_function = eval_func
         elif callable(evaluation_function):
             self._evaluation_function = evaluation_function
         else:
@@ -56,15 +48,15 @@ class Evaluator:
                 "Expected str or callable."
             )
 
+        self._confidence_function: ConfidenceFunction
         if isinstance(confidence_function, str):
-            self._confidence_function = CONFIDENCE_FUNCTIONS.get(
-                confidence_function
-            )
-            if self._confidence_function is None:
+            conf_func = CONFIDENCE_FUNCTIONS.get(confidence_function)
+            if conf_func is None:
                 raise ValueError(
                     f"Unknown confidence function '{confidence_function}'. "
                     f"Available options are: {list(CONFIDENCE_FUNCTIONS.keys())}"
                 )
+            self._confidence_function = conf_func
         elif callable(confidence_function):
             self._confidence_function = confidence_function
         else:
@@ -96,9 +88,7 @@ class Evaluator:
         self.diagnosis = self.diagnosis_model(
             label=self.evaluation_result.label,
             total_score=self.evaluation_result.score,
-            confidence=self._confidence_function(
-                applicable_rules, *args, **kwargs
-            ),
+            confidence=self._confidence_function(applicable_rules, *args, **kwargs),
             **self.evaluation_result.model_dump(exclude={"label", "score"}),
         )
 
@@ -119,10 +109,12 @@ class Evaluator:
         Perform evaluation and return results in a single method.
 
         Args:
-            data (Optional[Any]): Input data for evaluation. If provided, this updates the current data.
+            data (Optional[Any]): Input data for evaluation. If provided, this updates \
+            the current data.
 
         Returns:
-            DiagnosisBase: Evaluation results containing risk level, confidence, and total score.
+            DiagnosisBase: Evaluation results containing risk level, confidence, and \
+            total score.
         """
         if data is not None:
             self.data = data

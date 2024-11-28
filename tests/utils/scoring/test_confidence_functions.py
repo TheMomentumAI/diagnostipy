@@ -1,6 +1,3 @@
-import pytest
-
-from diagnostipy.core.models.symptom_rule import SymptomRule
 from diagnostipy.utils.scoring.confidence_functions import (
     entropy_based_confidence,
     rule_coverage_confidence,

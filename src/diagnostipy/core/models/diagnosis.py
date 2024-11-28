@@ -2,24 +2,21 @@ from typing import Any, Optional
 
 from pydantic import BaseModel
 
-from diagnostipy.core.models.symptom_rule import SymptomRule
 
+class DiagnosisBase(BaseModel, extra="allow"):
+    """
+    Base class for evaluation results. Allows default fields and additional \
+    customization.
+    """
 
-class DiagnosisBase(BaseModel):
-    pass
+    total_score: Optional[float] = None
+    label: Optional[str] = None
+    confidence: Optional[float] = None
 
 
 class Diagnosis(DiagnosisBase):
     """
-    Represents the result of an evaluation process.
-
-    Attributes:
-        total_score (float): The total score calculated from applicable rules.
-        label (Optional[str]): The label assigned to the evaluation result.
-        confidence (Optional[float]): The confidence level of the evaluation.
+    Represents the result of an evaluation process. Can extend DiagnosisBase.
     """
 
-    total_score: float = 0.0
-    label: Optional[str] = None
-    confidence: Optional[float] = None
     metadata: Optional[dict[str, Any]] = None

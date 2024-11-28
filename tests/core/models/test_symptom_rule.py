@@ -1,5 +1,3 @@
-import pytest
-
 from diagnostipy.core.models.symptom_rule import SymptomRule
 
 
@@ -23,9 +21,7 @@ def test_symptom_rule_applies_without_condition():
 
     result = rule.applies(data={"key": "value"})
 
-    assert (
-        result is False
-    )
+    assert result is False
 
 
 def test_symptom_rule_applies_with_condition():
@@ -80,6 +76,4 @@ def test_symptom_rule_missing_fields():
     assert rule.weight is None
     assert rule.critical is False
     assert rule.apply_condition is None
-    assert (
-        rule.applies(data={"key": "value"}) is False
-    )
+    assert rule.applies(data={"key": "value"}) is False

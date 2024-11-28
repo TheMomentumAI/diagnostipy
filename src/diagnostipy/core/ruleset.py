@@ -24,9 +24,7 @@ class SymptomRuleset:
             The added SymptomRule object.
         """
         if self.get_rule(rule.name):
-            raise ValueError(
-                f"A rule with the name '{rule.name}' already exists."
-            )
+            raise ValueError(f"A rule with the name '{rule.name}' already exists.")
         self.rules.append(rule)
         return rule
 

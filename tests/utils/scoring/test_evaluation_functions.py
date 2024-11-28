@@ -2,7 +2,10 @@ import pytest
 
 from diagnostipy.core.models.evaluation import BaseEvaluation
 from diagnostipy.core.models.symptom_rule import SymptomRule
-from diagnostipy.utils.scoring.evaluation_functions import default_evaluation
+from diagnostipy.utils.scoring.evaluation_functions import (
+    binary_simple,
+    default_evaluation,
+)
 
 
 def test_default_evaluation_with_conditions(rules_with_conditions):
@@ -51,3 +54,16 @@ def test_default_evaluation_with_conditions_medium(rules_with_conditions):
     assert isinstance(result, BaseEvaluation)
     assert result.label == "Medium"
     assert result.score == pytest.approx(6.5)
+
+
+def test_binary_simple_low_evaluation(rules_with_conditions):
+    input_data = {"symptom1": 0.1, "symptom2": 0.1, "symptom3": False}
+    applicable_rules = [
+        rule for rule in rules_with_conditions if rule.applies(input_data)
+    ]
+
+    all_rules = rules_with_conditions
+    result = binary_simple(applicable_rules, all_rules)
+
+    assert result.label == "Low"
+    assert result.score < sum(rule.weight for rule in all_rules) / 2

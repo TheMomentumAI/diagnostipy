@@ -60,3 +60,12 @@ def test_rule_coverage_confidence_with_conditions(rules_with_conditions):
     assert confidence == 0.0
     confidence = rule_coverage_confidence(applicable_rules, total_rules=0)
     assert confidence == 0.0
+
+
+def test_weighted_confidence_with_zero_weights(rules_with_zero_weight):
+    input_data = {"symptom1": 2, "symptom2": 0.3, "symptom3": True}
+    applicable_rules = [
+        rule for rule in rules_with_zero_weight if rule.applies(input_data)
+    ]
+
+    assert entropy_based_confidence(applicable_rules) == 0.0

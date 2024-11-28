@@ -32,5 +32,32 @@ def rules_with_conditions():
 
 
 @pytest.fixture
+def rules_with_zero_weight():
+    """
+    Fixture providing a set of rules with zero weight.
+    """
+    return [
+        SymptomRule(
+            name="rule1",
+            weight=0.0,
+            critical=False,
+            apply_condition=lambda data: data.get("symptom1", 0) > 1,
+        ),
+        SymptomRule(
+            name="rule2",
+            weight=0.0,
+            critical=True,
+            apply_condition=lambda data: data.get("symptom2", 0) < 1,
+        ),
+        SymptomRule(
+            name="rule3",
+            weight=0.0,
+            critical=False,
+            apply_condition=lambda data: data.get("symptom3"),
+        ),
+    ]
+
+
+@pytest.fixture
 def ruleset(rules_with_conditions):
     return SymptomRuleset(rules_with_conditions)

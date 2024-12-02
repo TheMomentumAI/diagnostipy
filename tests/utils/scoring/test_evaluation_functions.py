@@ -150,3 +150,41 @@ def test_multiclass_scoring_based_empty_threshold_label_map(
             score_function=tanh,
             threshold_label_map={},
         )
+
+
+def test_multiclass_simple_last_label(rules_with_conditions):
+    input_data = {"symptom1": 3, "symptom2": 0.1, "symptom3": True}
+    applicable_rules = [
+        rule for rule in rules_with_conditions if rule.applies(input_data)
+    ]
+
+    labels = ["Low", "Medium", "High"]
+    all_rules = rules_with_conditions
+    result = multiclass_simple(applicable_rules, all_rules, labels)
+
+    assert result.label == "High"
+    assert result.score >= sum(rule.weight or 0 for rule in rules_with_conditions)
+
+
+def test_multiclass_scoring_based_last_label(rules_with_conditions):
+    input_data = {"symptom1": 3, "symptom2": 2, "symptom3": True}
+    applicable_rules = [
+        rule for rule in rules_with_conditions if rule.applies(input_data)
+    ]
+
+    all_rules = rules_with_conditions
+    threshold_label_map = {
+        0.3: "Low",
+        0.6: "Medium",
+        0.9: "High",
+    }
+
+    result = multiclass_scoring_based(
+        applicable_rules,
+        all_rules,
+        score_function=lambda x: x,
+        threshold_label_map=threshold_label_map,
+    )
+
+    assert result.label == "High"
+    assert result.score >= max(threshold_label_map.keys())

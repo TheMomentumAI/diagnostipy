@@ -4,14 +4,20 @@ from diagnostipy.core.models.symptom_rule import SymptomRule
 
 
 class SymptomRuleset:
-    def __init__(self, rules: Optional[list[SymptomRule]] = None):
+    def __init__(
+        self,
+        rules: Optional[list[SymptomRule]] = None,
+        exclude_overlaps: bool = True,
+    ):
         """
         A collection of rules for evaluating symptoms.
 
         Args:
             rules: List of rules to apply.
+            exclude_overlaps: Whether to exclude overlapping rules by default.
         """
         self.rules: list[SymptomRule] = rules or []
+        self.exclude_overlaps: bool = exclude_overlaps
 
     def _is_more_specific(self, rule_a: SymptomRule, rule_b: SymptomRule) -> bool:
         """
@@ -132,7 +138,8 @@ class SymptomRuleset:
 
         for rule in self.rules:
             if rule.applies(data):
-                applicable_rules = self._exclude_overlaps(applicable_rules, rule)
+                if self.exclude_overlaps:
+                    applicable_rules = self._exclude_overlaps(applicable_rules, rule)
                 applicable_rules.append(rule)
 
         return applicable_rules

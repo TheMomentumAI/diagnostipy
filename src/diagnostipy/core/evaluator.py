@@ -1,9 +1,13 @@
-from typing import Any, Optional
+from enum import Enum
+from typing import Any, Callable, Optional, TypeVar
 
 from diagnostipy.core.models.diagnosis import Diagnosis, DiagnosisBase
 from diagnostipy.core.ruleset import SymptomRuleset
+from diagnostipy.utils.enums import ConfidenceFunctionEnum, EvaluationFunctionEnum
 from diagnostipy.utils.scoring import CONFIDENCE_FUNCTIONS, EVALUATION_FUNCTIONS
 from diagnostipy.utils.scoring.types import ConfidenceFunction, EvaluationFunction
+
+T = TypeVar("T", bound=Enum)
 
 
 class Evaluator:
@@ -22,47 +26,103 @@ class Evaluator:
         self,
         ruleset: SymptomRuleset,
         data: Optional[Any] = None,
-        evaluation_function: Optional[EvaluationFunction] | str = "binary_simple",
-        confidence_function: Optional[ConfidenceFunction] | str = "weighted",
+        evaluation_function: (
+            Optional[EvaluationFunction] | EvaluationFunctionEnum
+        ) = EvaluationFunctionEnum.BINARY_SIMPLE,
+        confidence_function: (
+            Optional[ConfidenceFunction] | ConfidenceFunctionEnum
+        ) = ConfidenceFunctionEnum.WEIGHTED,
         diagnosis_model: type[DiagnosisBase] = Diagnosis,
     ):
         self.data = data
         self.ruleset = ruleset
         self.diagnosis_model = diagnosis_model
         self.diagnosis = self.diagnosis_model()
+        self._evaluation_function = self._resolve_function(
+            evaluation_function,
+            EvaluationFunctionEnum,
+            EVALUATION_FUNCTIONS,
+            "evaluation_function",
+        )
+        self._confidence_function = self._resolve_function(
+            confidence_function,
+            ConfidenceFunctionEnum,
+            CONFIDENCE_FUNCTIONS,
+            "confidence_function",
+        )
 
-        self._evaluation_function: EvaluationFunction
-        if isinstance(evaluation_function, str):
-            eval_func = EVALUATION_FUNCTIONS.get(evaluation_function)
-            if eval_func is None:
-                raise ValueError(
-                    f"Unknown evaluation function '{evaluation_function}'. "
-                    f"Available options are: {list(EVALUATION_FUNCTIONS.keys())}"
-                )
-            self._evaluation_function = eval_func
-        elif callable(evaluation_function):
-            self._evaluation_function = evaluation_function
-        else:
-            raise TypeError(
-                f"Invalid type for evaluation_function: {type(evaluation_function)}. "
-                "Expected str or callable."
+    def _resolve_function(
+        self,
+        func_input: Optional[Callable[..., Any] | T | str],
+        enum_type: type[T],
+        func_map: dict[T, Callable[..., Any]],
+        func_name: str,
+    ) -> Callable[..., Any]:
+        """
+        Resolves and validates a function input.
+
+        Args:
+            func_input: The input, which can be an enum, string, or callable.
+            enum_type: The enum class for validation.
+            func_map: A dictionary mapping enums to functions.
+            func_name: The name of the function type (for error messages).
+
+        Returns:
+            The resolved callable function.
+
+        Raises:
+            ValueError: If the function cannot be resolved.
+            TypeError: If the input type is invalid.
+        """
+        if isinstance(func_input, enum_type):
+            return self._get_function_from_enum(
+                func_input, func_map, enum_type, func_name
             )
 
-        self._confidence_function: ConfidenceFunction
-        if isinstance(confidence_function, str):
-            conf_func = CONFIDENCE_FUNCTIONS.get(confidence_function)
-            if conf_func is None:
-                raise ValueError(
-                    f"Unknown confidence function '{confidence_function}'. "
-                    f"Available options are: {list(CONFIDENCE_FUNCTIONS.keys())}"
-                )
-            self._confidence_function = conf_func
-        elif callable(confidence_function):
-            self._confidence_function = confidence_function
-        else:
-            raise TypeError(
-                f"Invalid type for confidence_function: {type(confidence_function)}. "
-                "Expected str or callable."
+        if isinstance(func_input, str):
+            return self._get_function_from_str(
+                func_input, func_map, enum_type, func_name
+            )
+
+        if callable(func_input):
+            return func_input
+
+        raise TypeError(
+            f"Invalid type for {func_name}: {type(func_input)}. "
+            f"Expected {enum_type.__name__}, str, or callable."
+        )
+
+    def _get_function_from_enum(
+        self,
+        enum_value: T,
+        func_map: dict[T, Callable[..., Any]],
+        enum_type: type[T],
+        func_name: str,
+    ) -> Callable[..., Any]:
+        func = func_map.get(enum_value)
+        if not func:
+            raise ValueError(
+                f"Unknown {func_name} '{enum_value}'. "
+                f"Available options are: {[e.value for e in enum_type]}"
+            )
+        return func
+
+    def _get_function_from_str(
+        self,
+        str_value: str,
+        func_map: dict[T, Callable[..., Any]],
+        enum_type: type[T],
+        func_name: str,
+    ) -> Callable[..., Any]:
+        try:
+            enum_value = enum_type(str_value)
+            return self._get_function_from_enum(
+                enum_value, func_map, enum_type, func_name
+            )
+        except ValueError:
+            raise ValueError(
+                f"Unknown {func_name} '{str_value}'. "
+                f"Available options are: {[e.value for e in enum_type]}"
             )
 
     def evaluate(self, *args, **kwargs) -> None:

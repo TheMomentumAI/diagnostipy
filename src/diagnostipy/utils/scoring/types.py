@@ -6,7 +6,11 @@ from diagnostipy.core.models.symptom_rule import SymptomRule
 
 class ConfidenceFunction(Protocol):
     def __call__(
-        self, applicable_rules: list[SymptomRule], *args, **kwargs
+        self,
+        applicable_rules: list[SymptomRule],
+        all_rules: list[SymptomRule],
+        *args,
+        **kwargs
     ) -> float: ...
 
 

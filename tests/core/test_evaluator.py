@@ -115,7 +115,10 @@ def test_evaluator_with_unknown_confidence_function(ruleset):
         ValueError,
         match=f"Unknown confidence function '{unknown_function_name}'",
     ):
-        Evaluator(ruleset=ruleset, confidence_function=unknown_function_name)
+        Evaluator(
+            ruleset=ruleset,
+            confidence_function=unknown_function_name,  # type: ignore
+        )
 
 
 def test_evaluator_with_invalid_confidence_function_type(ruleset):
@@ -133,7 +136,7 @@ def test_evaluator_with_invalid_confidence_function_type(ruleset):
 
 def test_invalid_evaluation_function(ruleset):
     with pytest.raises(ValueError, match="Unknown evaluation function 'invalid_func'"):
-        Evaluator(ruleset, evaluation_function="invalid_func")
+        Evaluator(ruleset, evaluation_function="invalid_func")  # type: ignore
 
 
 def test_invalid_evaluation_function_type(ruleset):

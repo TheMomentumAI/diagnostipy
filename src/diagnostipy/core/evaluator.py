@@ -1,13 +1,11 @@
-from enum import Enum
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, Callable, Optional
 
 from diagnostipy.core.models.diagnosis import Diagnosis, DiagnosisBase
 from diagnostipy.core.ruleset import SymptomRuleset
+from diagnostipy.core.typing import FunctionMap, T
 from diagnostipy.utils.enums import ConfidenceFunctionEnum, EvaluationFunctionEnum
 from diagnostipy.utils.scoring import CONFIDENCE_FUNCTIONS, EVALUATION_FUNCTIONS
 from diagnostipy.utils.scoring.types import ConfidenceFunction, EvaluationFunction
-
-T = TypeVar("T", bound=Enum)
 
 
 class Evaluator:
@@ -55,7 +53,7 @@ class Evaluator:
         self,
         func_input: Optional[Callable[..., Any] | T | str],
         enum_type: type[T],
-        func_map: dict[T, Callable[..., Any]],
+        func_map: FunctionMap[T],
         func_name: str,
     ) -> Callable[..., Any]:
         """
@@ -87,10 +85,7 @@ class Evaluator:
         if callable(func_input):
             return func_input
 
-        raise TypeError(
-            f"Invalid type for {func_name}: {type(func_input)}. "
-            f"Expected {enum_type.__name__}, str, or callable."
-        )
+        raise TypeError(f"Invalid type for {func_name}: {type(func_input)}. ")
 
     def _get_function_from_enum(
         self,

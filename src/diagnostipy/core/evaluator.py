@@ -88,7 +88,9 @@ class Evaluator:
         self.diagnosis = self.diagnosis_model(
             label=self.evaluation_result.label,
             total_score=self.evaluation_result.score,
-            confidence=self._confidence_function(applicable_rules, *args, **kwargs),
+            confidence=self._confidence_function(
+                applicable_rules, self.ruleset.rules, *args, **kwargs
+            ),
             **self.evaluation_result.model_dump(exclude={"label", "score"}),
         )
 

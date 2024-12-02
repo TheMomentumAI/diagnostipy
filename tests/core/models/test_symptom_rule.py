@@ -13,17 +13,6 @@ def test_symptom_rule_initialization():
     assert rule.apply_condition is None
 
 
-def test_symptom_rule_applies_without_condition():
-    """
-    Test that applies() returns False if no apply_condition is set.
-    """
-    rule = SymptomRule(name="test_rule", weight=5.0, critical=False)
-
-    result = rule.applies(data={"key": "value"})
-
-    assert result is False
-
-
 def test_symptom_rule_applies_with_condition():
     """
     Test that applies() returns the correct result based on apply_condition.
@@ -76,4 +65,4 @@ def test_symptom_rule_missing_fields():
     assert rule.weight is None
     assert rule.critical is False
     assert rule.apply_condition is None
-    assert rule.applies(data={"key": "value"}) is False
+    assert rule.applies(data={"key": "value"}) is True

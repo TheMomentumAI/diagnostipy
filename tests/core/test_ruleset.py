@@ -74,3 +74,29 @@ def test_list_rules(ruleset):
     assert "rule1" in rule_names
     assert "rule2" in rule_names
     assert "rule3" in rule_names
+
+
+def test_is_more_specific(ruleset):
+    rule_a = SymptomRule(name="rule_a", conditions={"symptom1", "symptom2"}, weight=2.0)
+    rule_b = SymptomRule(name="rule_b", conditions={"symptom1"}, weight=1.0)
+
+    assert ruleset._is_more_specific(rule_a, rule_b) is True
+    assert ruleset._is_more_specific(rule_b, rule_a) is False
+
+    rule_c = SymptomRule(name="rule_c", conditions=None, weight=0.0)
+    assert ruleset._is_more_specific(rule_a, rule_c) is False
+    assert ruleset._is_more_specific(rule_c, rule_b) is False
+
+
+def test_exclude_overlaps_specific_rule(ruleset):
+    rule_a = SymptomRule(name="rule_a", conditions={"symptom1"}, weight=1.0)
+    rule_b = SymptomRule(name="rule_b", conditions={"symptom1", "symptom2"}, weight=2.0)
+    rule_c = SymptomRule(name="rule_c", conditions={"symptom3"}, weight=3.0)
+
+    applicable_rules = [rule_a, rule_c]
+
+    filtered_rules = ruleset._exclude_overlaps(applicable_rules, rule_b)
+
+    assert rule_a not in filtered_rules
+    assert rule_c in filtered_rules
+    assert rule_b not in filtered_rules

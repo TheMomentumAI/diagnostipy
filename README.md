@@ -132,6 +132,15 @@ print(results)
 total_score=10.0 label='High' confidence=0.8333333333333334 metadata=None
 ```
 
+#### Explanation of Output:
+- `total_score`: Sum of weights from applicable rules based on the input data.
+               Here, `6.0 (High Fever)` + `4.0 (Persistent Cough)` = `10.0`.
+
+- `label`: Categorical result based on total_score (e.g., 'Low', 'High').
+         Determined by the evaluation function used.
+
+- `confidence`: A measure of certainty about the evaluation result, computed based on the logic defined in the `confidence_function` parameter when creating the `Evaluator`
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Roadmap

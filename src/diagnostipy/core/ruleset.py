@@ -4,14 +4,58 @@ from diagnostipy.core.models.symptom_rule import SymptomRule
 
 
 class SymptomRuleset:
-    def __init__(self, rules: Optional[list[SymptomRule]] = None):
+    def __init__(
+        self,
+        rules: Optional[list[SymptomRule]] = None,
+        exclude_overlaps: bool = True,
+    ):
         """
         A collection of rules for evaluating symptoms.
 
         Args:
             rules: List of rules to apply.
+            exclude_overlaps: Whether to exclude overlapping rules by default.
         """
         self.rules: list[SymptomRule] = rules or []
+        self.exclude_overlaps: bool = exclude_overlaps
+
+    def _is_more_specific(self, rule_a: SymptomRule, rule_b: SymptomRule) -> bool:
+        """
+        Determine if rule_a is more specific than rule_b.
+
+        Args:
+            rule_a: The first rule.
+            rule_b: The second rule.
+
+        Returns:
+            True if rule_a is more specific than rule_b, False otherwise.
+        """
+        if rule_a.conditions and rule_b.conditions:
+            return rule_a.conditions >= rule_b.conditions
+        return False
+
+    def _exclude_overlaps(
+        self, applicable_rules: list[SymptomRule], rule: SymptomRule
+    ) -> list[SymptomRule]:
+        """
+        Exclude overlapping rules that are less specific than the given rule.
+
+        Args:
+            applicable_rules: List of currently applicable rules.
+            rule: The rule being evaluated.
+
+        Returns:
+            A filtered list of rules excluding less specific overlapping rules.
+        """
+        filtered_rules = []
+        for r in applicable_rules:
+            if self._is_more_specific(rule, r):
+                continue
+            elif self._is_more_specific(r, rule):
+                filtered_rules.append(r)
+            else:
+                filtered_rules.append(r)
+        return filtered_rules
 
     def add_rule(self, rule: SymptomRule) -> SymptomRule:
         """
@@ -81,7 +125,8 @@ class SymptomRuleset:
 
     def get_applicable_rules(self, data: Any) -> list[SymptomRule]:
         """
-        Return all rules that apply to the provided data.
+        Return all rules that apply to the provided data, ensuring that overlapping
+        rules with less specific conditions are excluded.
 
         Args:
             data: Input data to evaluate. Can be of any type.
@@ -89,7 +134,15 @@ class SymptomRuleset:
         Returns:
             A list of applicable rules.
         """
-        return [rule for rule in self.rules if rule.applies(data)]
+        applicable_rules: list[SymptomRule] = []
+
+        for rule in self.rules:
+            if rule.applies(data):
+                if self.exclude_overlaps:
+                    applicable_rules = self._exclude_overlaps(applicable_rules, rule)
+                applicable_rules.append(rule)
+
+        return applicable_rules
 
     def list_rules(self) -> list[str]:
         """

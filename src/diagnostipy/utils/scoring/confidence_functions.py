@@ -90,7 +90,6 @@ def rule_coverage_confidence(
     """
     max_possible_rules = calculate_max_possible_rules(all_rules)
 
-    print(max_possible_rules)
     if len(max_possible_rules) == 0:
         return 0.0
 
